@@ -41,7 +41,7 @@ uniform int paletteSize;
 
   float random(in vec2 st)
    {
-     return fract(tan(distance(st* PHI*0.5, st * PI*0.1)*SEED)*st.x);
+     return fract(tan(distance(st* PHI*0.5, st * PI*0.1)*SEED));
    }
 
 
