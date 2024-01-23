@@ -5,24 +5,12 @@ precision highp float;
 
 varying vec2 vTexCoord;
 uniform sampler2D uTexture0;
-uniform sampler2D uTexture1;
-
 uniform float u_time;
 uniform vec2 uResolution;
-uniform float u_amp;
 uniform float u_octave;
 uniform float u_fbmAmp;
-uniform float uvChooser;
-uniform float u_intensity;
 uniform float u_roundness;
 uniform float u_angleC;
-uniform float u_sqr;
-uniform float u_darkC;
-uniform float u_seed1;
-uniform float u_seed2;
-uniform float u_seed3;
-uniform float u_random;
-
 
 // float random (in vec2 st) {
 //     return fract(sin(dot(st.xy,
@@ -51,7 +39,7 @@ float noise (in vec2 st) {
     float c = random(i + vec2(0.0, 1.0));
     float d = random(i + vec2(1.0, 1.0));
 
-    vec2 u = fu * fu * (3.0 - 1.0 * fu);
+    vec2 u = fu * fu * (3.0 - 2.0 * fu);
 
     return mix(a, b, u.x) +
             (c - a)* u.y * (1.0 - u.x) +
