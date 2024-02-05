@@ -16,6 +16,7 @@ uniform float ak;
 uniform float dirX;
 uniform float dirY;
 uniform float satOn;
+uniform float proD;
 
 
   // float random(in vec2 st)
@@ -61,36 +62,26 @@ vec3 hsv2rgb(vec3 c) {
 
 
  
-    // if(satOn == 1.0){
-       if(pgCol.x < .5) offset.x *= -1.;
+    if(satOn == 1.0){/////sadece düz
+      if(pgCol.x < proD) offset.x *= dirX * -1.;
+      else offset.x *= dirX;
+      if(pgCol.y < proD) offset.y *= dirY * -1.;
+      else  offset.y *= dirY;
+     }else if(satOn == 2.0){////bu kose
+        if(pgCol.x < .5) offset.x *= -1.;
         else if(pgCol.x < 1.) offset.x *= dirX;
-    
-      if(pgCol.y < .5) offset.y *= -1.;
+        if(pgCol.y < .5) offset.y *= -1.;
         else if(pgCol.y < 1.) offset.y *= dirY;
-    // }else if(satOn == 0.0){ 
-    //    if(pgCol.x < .1) offset.x *= -1.;
-    //      else offset.x *= dirX;
-    //    if(pgCol.y < .1) offset.y *= -1.;
-    //      else  offset.y *= dirY;
-    // }
-
-
+     }else{////////bu da hepsi
+      if(pgCol.x < .1) offset.x *= -1.;
+      else offset.x *= dirX;
+      if(pgCol.y < .1) offset.y *= -1.;
+      else  offset.y *= dirY;
+      }
 
 
  
-// if(satOn == 1.0){
-//     if(pgCol.x < .5) offset.x *= -1.;
-//     else if(pgCol.x < 1.) offset.x *= 0. * random(uv/1.0);
-    
-//     if(pgCol.y < .5) offset.y *= -1.;
-//     else if(pgCol.y < 1.) offset.y *= 0. * random(uv/1.0);
-// }else{
 
-//       if(pgCol.x < .1) offset.x *= -1.;
-//     else offset.x *= dirX* random(uv/1.0);
-//     if(pgCol.y < .1) offset.y *= -1.;
-//     else  offset.y *= dirY* random(uv/1.0);
-// }
 
 
     
