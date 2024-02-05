@@ -48,7 +48,7 @@ console.log(fxhash)
 
 function preload() {
 
-  // seed = 71837388.65764058
+  // seed = 38629361.83365098
   console.log(seed)
   noiseSeed(seed)
   randomSeed(seed)
@@ -95,11 +95,6 @@ function setup() {
   g.background(0, 0, 80)
 
 
-  k = createGraphics(w, h, WEBGL)
-  k.colorMode(HSB, 360, 100, 100, 1);
-  k.background(30, 8, 90);
-  k.pixelDensity(pix);
-
   f.background(0, 0, 10)
 
   pg2 = createGraphics(w, h)
@@ -115,18 +110,16 @@ function setup() {
 
   f.rectMode(CENTER)
 
-  drawRandomTexture(ar, w)
-
-
   noiseSeed(seed)
   randomSeed(seed)
 
 
 
-  let frArr = [25, 50, 100, 50, 25, 50, 100, 50, 50] /////////////////ritim
+  let frArr = [25, 50, 100, 50, 25, 50, 100, 50, 50, 100] /////////////////ritim
 
 
   frameMod = frArr[floor(random(frArr.length))]
+
 
 
   fr = random([30, 25, 25, 25, 30, 25]) * 2
@@ -255,6 +248,8 @@ function setup() {
 
   sChooser = random([1.0, 2.0, 3.0, 1.0])
 
+
+
   if (sChooser == 1.0) {
     s = minDim / 10
   } else if (sChooser == 2.0) {
@@ -263,9 +258,17 @@ function setup() {
     s = minDim / 20
   }
 
-  mapChooser = random([0.0, 0.0, 0.0, 0.0, 1.0, 2.0])
+  mapChooser = random([0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 0.0, 0.0])
+
+
 
   ellipseChooser = random([0.0, 0.0, 1.0, 0.0, 0.0])
+
+  if (mapChooser !== 0.0) {
+    ellipseChooser = 0
+  }
+
+
 
   probb = random([0, 1])
 
@@ -275,7 +278,9 @@ function setup() {
     akChooser = random([1, 2, 3, 4, 1, 2])
   }
 
-  dirChooser = random([1.0, 2.0, 3.0, 1.0])
+  dirChooser = random([1.0, 2.0, 3.0, 3.0])
+
+  // dirChooser = 3.0 ///////////////////////////////////////////////////bunu kapa
 
   let dX, dY
 
@@ -285,13 +290,13 @@ function setup() {
     dY = random([-1, 1])
   }
 
-
+  let proD = random([.1, .5])
 
 
 
   shader(sh)
 
-  satChooser = random([0.0, 1.0])
+  satChooser = random([0.0, 1.0, 2.0])
   aniCount = random(1)
 
 
@@ -301,6 +306,8 @@ function setup() {
   sh.setUniform('pg', pg2)
   sh.setUniform('pg2', pg2)
   sh.setUniform('img', f)
+  sh.setUniform('proD', proD)
+
 
 
   sh.setUniform('dirX', random([-1., 1., 0., 0., 0.])) ////hepsi
@@ -318,20 +325,20 @@ function setup() {
   }
 
 
-  sh.setUniform('satOn', satChooser)
+  sh.setUniform('satOn', dirChooser)
 
 
 
   roundInt = 4
   uPi = 1.0
 
-  uOctave = round(random(1.85, 3), roundInt) * 1;
+  uOctave = round(random(3, 5), roundInt) * 1;
   uFbmAmp = round(random(30.0, 80.0), roundInt);
   uAngleC = round(random(1), roundInt);
   uAniSpeed = random([2250.0, 2250.0, 2500.0, 2500.0, 3000.0, 3000.0, 3000.0, 3000.0])
 
 
-  // uOctave = 2
+
 
 
   if (sqChooser < 0.50) {
@@ -397,7 +404,7 @@ function setup() {
 
 
   if (border == 1.0) borderStr = "border"
-  yatayChooser = random([0.0, 1.0, 2.0, 3.0])
+  yatayChooser = random([0.0, 1.0, 3.0])
 
 
   whEdgeX = minDim / 10
@@ -422,8 +429,8 @@ function setup() {
   }
 
 
-  borX = width/2//random([width / 2, width / 2, random(width / 4, width / 1.333)])
-  borY = height/2//random([height / 2, height / 2, random(height / 4, height / 1.333)])
+  borX = width / 2 //random([width / 2, width / 2, random(width / 4, width / 1.333)])
+  borY = height / 2 //random([height / 2, height / 2, random(height / 4, height / 1.333)])
 
 }
 
@@ -437,6 +444,7 @@ function draw() {
   pg.fill(random([0, 255, 127]), random([0, 255, 127]), random([0, 255, 127]))
 
   pg.rect(x, y, s * 2, s * 2)
+
 
 
   pg2.fill(random([0, 255, 127]), random([0, 255, 127]), random([0, 255, 127]))
@@ -490,8 +498,8 @@ function draw() {
       pg2.push()
       pg2.rectMode(CORNER)
       // pg2.translate(borX, borY)
-      pg2.rect(borX - (minDim/10)/2, 0, minDim / 10, height)
-      pg2.rect(0, borY- (minDim/10)/2, width, minDim / 10)
+      pg2.rect(borX - (minDim / 10) / 2, 0, minDim / 10, height)
+      pg2.rect(0, borY - (minDim / 10) / 2, width, minDim / 10)
       pg2.pop()
 
 
@@ -521,7 +529,7 @@ function draw() {
 
 
   img.image(c, w / 2, h / 2)
-  // img.image(f, w / 2, h / 2)
+  // img.image(g, w / 2, h / 2)
 
 
   if (frameCount % frameMod == 0) {
@@ -546,37 +554,36 @@ function draw() {
 
         } else if (mapChooser == 1) {
           if (probb == 0) {
-            if (x < width / 2) {
+            if (x <= width / 2 - s * 2) {
               s = random([minDim / 10, minDim / 5, minDim / 10, minDim / 5])
             } else {
-              s = random([minDim / 50, minDim / 20, minDim / 50, minDim / 20])
+              s = random([minDim / 40, minDim / 20, minDim / 40, minDim / 20])
             }
           } else {
-            if (x > width / 2) {
+            if (x >= width / 2 - s * 2) {
               s = random([minDim / 10, minDim / 5, minDim / 10, minDim / 5])
             } else {
-              s = random([minDim / 50, minDim / 20, minDim / 50, minDim / 20])
+              s = random([minDim / 40, minDim / 20, minDim / 40, minDim / 20])
             }
           }
-
-
         } else {
           if (probb == 0) {
-            if (y < height / 2) {
+            if (y <= height / 2 - s * 2) {
               s = random([minDim / 10, minDim / 5, minDim / 10, minDim / 5])
             } else {
-              s = random([minDim / 50, minDim / 20, minDim / 50, minDim / 20])
+              s = random([minDim / 40, minDim / 20, minDim / 40, minDim / 20])
             }
           } else {
-            if (y > height / 2) {
+            if (y >= height / 2 - s * 2) {
               s = random([minDim / 10, minDim / 5, minDim / 10, minDim / 5])
             } else {
-              s = random([minDim / 50, minDim / 20, minDim / 50, minDim / 20])
+              s = random([minDim / 40, minDim / 20, minDim / 40, minDim / 20])
             }
           }
         }
 
         pg2.fill(random([0, 255, 127]), random([0, 255, 127]), random([0, 255, 127]))
+
         if (ellipseChooser == 0.0) {
           pg2.rect(x, y, s, s)
         } else {
@@ -624,6 +631,8 @@ function draw() {
       dY = random([-1, 1])
     }
 
+
+
     if (dirChooser == 1.0) {
       sh.setUniform('dirX', dX) ///sadece dikeyYatay
       sh.setUniform('dirY', dY)
@@ -651,6 +660,7 @@ function draw() {
 
     if (borderStr == "border") {
       border = random([1.0, 1.0, 0.0, 1.0, 1.0])
+      if (yatayChooser == 3.0) border = random([1.0, 0.0, 1.0, 0.0, 0.0])
     }
 
   }
@@ -670,6 +680,8 @@ function draw() {
 
   quad(-1, -1, 1, -1, 1, 1, -1, 1)
 
+ 
+
 
 
 
@@ -687,54 +699,6 @@ function keyPressed() {
   }
   if (key == "s") {
     saveCanvas("strained", "png")
-  }
-
-}
-
-
-
-function sun(sunX, sunY, sunRad, count, hu, satu, bri) {
-
-
-  for (let i = 0; i < count; i++) {
-
-    let r = random(1)
-    if (r > 0.60) {
-      f.beginShape(LINES)
-    } else if (r > 0.40) {
-      if (random(1) < 0.70) {
-        if (count == 100) {
-          f.beginShape()
-        } else {
-          f.beginShape(TRIANGLE_FAN)
-        }
-      } else {
-        f.beginShape()
-      }
-    } else {
-      f.beginShape(TRIANGLES)
-    }
-
-    for (let a = 0; a < TAU; a += 0.01) {
-
-      let n = map(noise(offset, a * 0.001), 0, 1, -50, 50);
-      offset += 0.001
-      let x = sunX + sin(a) * (sunRad - i * sunRad / 20) + n / 2
-      let y = sunY + cos(a) * (sunRad - i * sunRad / 20) + n
-
-      f.noFill()
-      f.strokeWeight(random(1, 2) * 1.2)
-
-
-      f.stroke(hu, satu, bri, random(0.2, 1))
-
-      if (textrS < 0.50) {
-        f.curveVertex(x, y)
-      } else {
-        f.curveVertex(x ^ a, y ^ a)
-      }
-    }
-    f.endShape()
   }
 
 }
