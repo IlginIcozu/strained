@@ -37,7 +37,7 @@ let i, f, g, k
 let frameMod
 let blurShader
 
-let seed1 = 99999999 * mathRand()
+let seed1 = ~~(Genify.random() * 123456789);
 let borderStr
 let uOctave
 let border
