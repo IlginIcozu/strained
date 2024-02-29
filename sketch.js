@@ -37,7 +37,7 @@ let i, f, g, k
 let frameMod
 let blurShader
 
-let seed1 = ~~(Genify.random() * 123456789);
+let seed1;
 let borderStr
 let uOctave
 let border
@@ -56,7 +56,7 @@ let probb
 let borderBox
 
 function preload() {
-
+  seed1 = 99999999999 * random(1)
   // seed1 = 173199570.63442616
   console.log(seed1)
   noiseSeed(seed1)
