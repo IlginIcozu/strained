@@ -55,193 +55,17 @@ let whEdgeX
 let probb
 let borderBox
 
-let theVertex1 = `
-#ifdef GL_ES
-precision highp float;
-#endif
-attribute vec3 aPosition;
-attribute vec2 aTexCoord;
-varying vec2 vTexCoord;
-void main() {
-  vTexCoord = aTexCoord;
-  vec4 positionVec4 = vec4(aPosition, 1.0);
-  positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
-  gl_Position = positionVec4;
+function preload() {
+
+  // seed1 = 173199570.63442616
+  console.log(seed1)
+  noiseSeed(seed1)
+  randomSeed(seed1)
+
+  sh = loadShader("pix.vert", "pix.frag");
+  blurShader = loadShader('blur.vert', 'blur.frag')
+
 }
-`
-let theVertex2 = `
-#ifdef GL_ES
-  precision highp float;
-  #endif
-  attribute vec3 aPosition;
-  void main(){
-    gl_Position=vec4(aPosition,1.0);
-  }
-`
-let fbmfrag = `
-precision highp float;
-#define PI 3.14159265359
-varying vec2 vTexCoord;
-uniform sampler2D uTexture0;
-uniform float u_time;
-uniform vec2 uResolution;
-uniform float u_octave;
-uniform float u_fbmAmp;
-uniform float u_roundness;
-uniform float u_angleC;
-highp float random(vec2 co)
-{
-    highp float a = 12.9898;
-    highp float b = 78.233;
-    highp float c = 43758.5453;
-    highp float dt= dot(co.xy ,vec2(a,b));
-    highp float sn= mod(dt,3.14);
-    return fract(sin(sn) * c);
-}
-float noise (in vec2 st) {
-    vec2 i = floor(st);
-    vec2 fu = fract(st);
-    float a = random(i);
-    float b = random(i + vec2(1.0, 0.0));
-    float c = random(i + vec2(0.0, 1.0));
-    float d = random(i + vec2(1.0, 1.0));
-    vec2 u = fu * fu * (3.0 - 2.0 * fu);
-    return mix(a, b, u.x) +
-            (c - a)* u.y * (1.0 - u.x) +
-            (d - b) * u.x * u.y;
-}
-#define OCTAVES 4
-float fbm (in vec2 st) {
-    float value = 0.0;
-    float amplitude = 0.25;
-    float frequency = 0.1;
-    for (int i = 0; i < OCTAVES; i++) {
-        value += amplitude* noise(st);
-        st *= u_octave + u_time/100.0;
-        amplitude *= .45; 
-    }
-    return value;
-}
-float fbm6( in vec2 p ){
-    vec2 q = vec2( fbm( p + vec2(0.0,u_roundness) ),
-                   fbm( p + vec2(0.0,2.0) ) );
-    vec2 r = vec2( fbm( p + 4.0*q + vec2(4.0,3.0)),
-                   fbm( p + 4.0*q + vec2(u_angleC * 4.0,0.0)));
-    return fbm( p + u_fbmAmp* r ); // 2.0, 6.0
-}
-void main() {
-  vec2 st = gl_FragCoord.xy/uResolution.xy;
-  vec2 uv = vTexCoord;
-  uv.y = 1.0 - uv.y;
-  vec2 texelSize = 1.0 / uResolution;
-  vec2 offset;
-  float scale = 0.1;
-  float offset2 = 0.1;
-  float angle;
-
-  angle = noise(st + uv * 0.2) * PI * 2.0; //0.01 0.4
-  float radius = offset2;
-  st *= scale;
-  st *= radius * vec2(fract(angle *  st.x), fract(angle / st.y));
-
-  offset = texelSize  * vec2(4.0,4.0) - fbm6(uv) + 0.18;
-  vec4 color = vec4(0.0);
-  float div;
-  
-  color += texture2D(uTexture0, uv + vec2(offset.y, st.y)); 
-  color += texture2D(uTexture0, uv + vec2(-offset.y, st.y)); 
-  color += texture2D(uTexture0, uv + vec2(-offset.x, st.x)); 
-  color += texture2D(uTexture0, uv + vec2(offset.x, st.x)); 
-
-  color += texture2D(uTexture0, uv + vec2(offset.y, -st.y)); 
-  color += texture2D(uTexture0, uv + vec2(-offset.y, -st.y)); 
-  color += texture2D(uTexture0, uv + vec2(-offset.x, -st.x)); 
-  color += texture2D(uTexture0, uv + vec2(offset.x, -st.x)); 
-  div = 8.0;
-  color /= div;      
-  gl_FragColor = color;
-}
-`
-
-let pixfrag = `
-#ifdef GL_ES
-precision highp float;
-#endif
-#define PI 3.14159265359
-const float PHI = 1.61803398874989484820459;
-const float SEED = 43758.0;
-uniform vec2 resolution;
-uniform sampler2D pg;
-uniform sampler2D pg2;
-uniform sampler2D img;
-uniform float ak;
-uniform float dirX;
-uniform float dirY;
-uniform float satOn;
-uniform float proD;
-
-float random (vec2 st) {
-    return fract(sin(dot(st.xy,
-                         vec2(12.9898,78.233)))*
-        43758.5453123);
-}
-
-
-vec3 rgb2hsv(vec3 c) {
-  vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
-  vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
-  vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
-
-  float d = q.x - min(q.w, q.y);
-  float e = 1.0e-10;
-  return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
-}
-vec3 hsv2rgb(vec3 c) {
-  vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-}
-void main() {
-  vec2 uv = gl_FragCoord.xy / resolution;
-  uv.y = 1. - uv.y;
-
-  vec2 offset;
-  vec2 pgCol;
-  offset = vec2(texture2D(pg2, uv).r * 10. * ak ) * vec2(1./resolution.x, 1./resolution.y)  * random(uv/1.0);
-  pgCol = vec2(texture2D(pg, uv));
-
-  if(satOn == 1.0){/////sadece düz
-    if(pgCol.x < proD) offset.x *= dirX * -1.;
-     else offset.x *= dirX;
-    if(pgCol.y < proD) offset.y *= dirY * -1.;
-     else  offset.y *= dirY;
-  }else if(satOn == 2.0){////bu kose
-    if(pgCol.x < .5) offset.x *= -1.;
-      else if(pgCol.x < 1.) offset.x *= dirX;
-    if(pgCol.y < .5) offset.y *= -1.;
-      else if(pgCol.y < 1.) offset.y *= dirY;
-  }else{////////bu da hepsi
-    if(pgCol.x < .1) offset.x *= -1.;
-      else offset.x *= dirX;
-    if(pgCol.y < .1) offset.y *= -1.;
-      else  offset.y *= dirY;
-  }
-
-  vec3 c = texture2D(img, uv + offset).rgb ;
-  
-  vec3 hsv = rgb2hsv(c.rgb);
-  hsv.y *= 1.0005;
-  c.rgb = hsv2rgb(hsv);
-
-  c -= texture2D(img, uv + random(uv/1.0) - offset).rgb;
-  c += texture2D(img, uv + random(uv/1.0) + offset).rgb;
-
-  c.rgb = ((c.rgb - vec3(0.5)) * 1.005 + vec3(0.5));
-
-
-  gl_FragColor = vec4(c, 1.0);
-  }
-`
 
 function setup() {
 
@@ -277,8 +101,6 @@ function setup() {
 
   f.rectMode(CENTER)
 
-  blurShader = g.createShader(theVertex1, fbmfrag)
-  sh = createShader(theVertex2, pixfrag)
 
   // seed1 = 40160455.87489417
   console.log(seed1)
@@ -462,7 +284,9 @@ function setup() {
     akChooser = random([1, 2, 3, 4, 1, 2])
   }
 
-  dirChooser = random([1.0, 2.0, 3.0, 3.0])
+  dirChooser = random([1.0, 2.0, 3.0, 3.0, 4.0])
+
+
 
 
   let dX = random([1., -1., 0.0, 0.0])
@@ -555,16 +379,18 @@ function setup() {
   blockH = height / 2
   blockAni = random([0.0, 1.0])
 
-  border = random([0.0, 0.0, 1.0, 1.0, 0.0])
+  border = random([0.0, 0.0, 1.0, 1.0, 1.0])
+
+
 
   if (border == 1.0) borderStr = "border"
-  yatayChooser = random([0.0, 1.0, 2.0, 4.0, 2.0, 4.0])
+  yatayChooser = random([0.0, 1.0, 2.0, 3.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
 
   borderBox = random([1, 2])
 
   whEdgeX = minDim / 10
 
-  noCursor()
+  // noCursor()
 
 }
 
@@ -573,11 +399,13 @@ function draw() {
   let x = (random(w / s) ^ (frameCount / s)) * s
   let y = (random(h / s) ^ (frameCount / s)) * s
 
-  pg.fill(random([0, 255, 127]), random([0, 255, 127]), random([0, 255, 127]))
-  pg.rect(x, y, s * 2, s * 2)
+  for (let i = 0; i < 3; i += 1) {
+    pg.fill(random([0, 255, 127]), random([0, 255, 127]), random([0, 255, 127]))
+    pg.rect(x, y, s * 2, s * 2)
 
-  pg2.fill(random([0, 255, 127]), random([0, 255, 127]), random([0, 255, 127]))
-  pg2.rect(x, y, s * 2, s * 2)
+    pg2.fill(random([0, 255, 127]), random([0, 255, 127]), random([0, 255, 127]))
+    pg2.rect(x, y, s * 2, s * 2)
+  }
 
   if (border == 1.0) {
     pg2.push()
@@ -626,7 +454,7 @@ function draw() {
         pg2.rect(0, height / 2, width / 2, height)
       }
       pg2.pop()
-    } else if (yatayChooser == 4.0) {
+    } else if (yatayChooser == 3.0) {
       pg2.push()
       pg2.rectMode(CENTER)
       if (borderBox == 1) {
@@ -635,14 +463,54 @@ function draw() {
         pg2.rect(width / 2, height / 2, min(width, height) / 2, height)
       }
       pg2.pop()
+    } else if (yatayChooser == 4.0) {
+      pg2.push()
+      pg2.ellipse(width / 2, height / 2, min(width, height) / 1.25)
+      pg2.pop()
+    } else if (yatayChooser == 5.0) {
+      pg2.push()
+      pg2.rectMode(CORNER)
+      if (borderBox == 1) {
+        pg2.rect(0, 0, width / 2, height)
+      } else {
+        pg2.rect(0, 0, width, height / 2)
+      }
+
+
+      pg2.pop()
+    } else if (yatayChooser == 6.0) {
+      pg2.push()
+      pg2.rectMode(CORNER)
+
+
+      if (borderBox == 1) {
+        pg2.rect(width / 2, 0, width / 2, height)
+      } else {
+        pg2.rect(0, height / 2, width, height / 2)
+      }
+      pg2.pop()
+    } else if (yatayChooser == 7.0) {
+      pg2.push()
+
+      pg2.rectMode(CENTER)
+
+
+      if (borderBox == 1) {
+        pg2.rect(width / 2, height / 2, width / 3, height)
+      } else {
+        pg2.rect(width / 2, height / 2, width, height / 3)
+      }
+      pg2.pop()
     }
+
+
 
 
     pg2.pop()
   }
 
 
-  c.image(img, w / 2, h / 2)
+
   img.image(c, w / 2, h / 2)
 
   if (frameCount % frameMod == 0) {
@@ -742,11 +610,18 @@ function draw() {
     }
   }
 
-  sh.setUniform('u_time', millis() / 1000.0)
+  sh.setUniform('u_time', frameCount / 50.0)
+
   sh.setUniform('pg', pg2)
   sh.setUniform('img', img)
   sh.setUniform('pg2', pg2)
+
+
+
   quad(-1, -1, 1, -1, 1, 1, -1, 1)
+
+
+
 }
 
 
